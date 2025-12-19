@@ -1,6 +1,3 @@
-"""
-Главный файл телеграм-бота для работы с цитатами.
-"""
 import os
 import logging
 from dotenv import load_dotenv
@@ -14,13 +11,10 @@ from quotes import (
     search_quotes_count_by_tag
 )
 
-# Загружаем переменные из .env файла
 load_dotenv()
 
-# Получаем токен
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
-# Настройка логов
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
@@ -29,10 +23,6 @@ logger = logging.getLogger(__name__)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """
-    Обрабатывает команду /start.
-    Выводит приветственное сообщение и список команд.
-    """
     welcome_text = (
         "👋 *Привет! Я бот с цитатами.*\n\n"
         "📚 *Доступные команды:*\n"
@@ -55,10 +45,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """
-    Обрабатывает команду /help.
-    Выводит подробную справку по использованию бота.
-    """
     help_text = (
         "📖 *Помощь по использованию бота*\n\n"
         "*Основные команды:*\n"
@@ -84,17 +70,10 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 
 async def quote_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """
-    Обрабатывает команду /quote.
-    Отправляет случайную цитату, возможно с фильтром по тегу.
-    """
-    # Получаем тег из аргументов команды
     tag = " ".join(context.args) if context.args else None
     
-    # Получаем цитату
     quote_text = get_quote_by_tag(tag)
     
-    # Добавляем пояснение если был тег
     if tag:
         message = f"📌 *Цитата с тегом #{tag}:*\n\n{quote_text}"
     else:
@@ -104,19 +83,12 @@ async def quote_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
 
 async def tags_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """
-    Обрабатывает команду /tags.
-    Отправляет список всех доступных тегов.
-    """
     tags_text = get_formatted_tags_list()
     await update.message.reply_text(tags_text, parse_mode="Markdown")
 
 
 async def add_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """
-    Обрабатывает команду /add.
-    Начинает процесс добавления новой цитаты.
-    """
+
     help_text = (
         "📝 *Добавление новой цитаты*\n\n"
         "Отправьте цитату в формате:\n"
@@ -137,10 +109,7 @@ async def add_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
 
 async def search_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """
-    Обрабатывает команду /search.
-    Ищет цитаты по указанному тегу.
-    """
+
     if not context.args:
         help_text = (
             "🔍 *Поиск цитат по тегу*\n\n"
@@ -160,16 +129,11 @@ async def search_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """
-    Обрабатывает обычные текстовые сообщения от пользователя.
-    В основном используется для добавления цитат.
-    """
+
     text = update.message.text
-    
-    # Проверяем, является ли сообщение цитатой для добавления
+
     if "|" in text:
         try:
-            # Разбиваем сообщение на части
             parts = text.split("|")
             
             if len(parts) >= 3:
@@ -177,7 +141,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
                 author = parts[1].strip()
                 tags = parts[2].strip()
                 
-                # Добавляем цитату
                 result = add_new_quote_with_validation(quote_text, author, tags)
                 await update.message.reply_text(result, parse_mode="Markdown")
             else:
@@ -195,7 +158,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
                 "Попробуйте снова или используйте /help для справки."
             )
     else:
-        # Если сообщение не в формате цитаты, показываем справку
         await update.message.reply_text(
             "🤔*Не понимаю команду*\n\n"
             "Используйте:\n"
@@ -209,11 +171,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
 
 def main() -> None:
-    """
-    Основная функция запуска бота.
-    Инициализирует и запускает телеграм-бота.
-    """
-    # Проверяем наличие токена
+
     if not TOKEN:
         print("ОШИБКА: Токен бота не найден!")
         print("\nЧтобы исправить:")
@@ -229,10 +187,8 @@ def main() -> None:
         return
     
     try:
-        # Создаем приложение бота
         app = Application.builder().token(TOKEN).build()
         
-        # Регистрируем обработчики команд
         app.add_handler(CommandHandler("start", start))
         app.add_handler(CommandHandler("help", help_command))
         app.add_handler(CommandHandler("quote", quote_command))
@@ -240,10 +196,8 @@ def main() -> None:
         app.add_handler(CommandHandler("add", add_command))
         app.add_handler(CommandHandler("search", search_command))
         
-        # Регистрируем обработчик обычных сообщений
         app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
         
-        # Запускаем бота
         print("Бот успешно запущен!")
         print("Нажмите Ctrl+C для остановки")
         

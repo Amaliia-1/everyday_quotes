@@ -1,4 +1,3 @@
-# check_bot.py - проверка подключения бота
 import os
 from dotenv import load_dotenv
 from telegram import Bot
@@ -17,10 +16,8 @@ else:
     print(f"✅ Токен найден: {TOKEN[:15]}...")
     
     try:
-        # Создаем объект бота
         bot = Bot(token=TOKEN)
         
-        # Получаем информацию о боте
         me = bot.get_me()
         
         print(f"✅ Бот подключен успешно!")
@@ -28,11 +25,10 @@ else:
         print(f"   Юзернейм: @{me.username}")
         print(f"   ID бота: {me.id}")
         
-        # Проверяем, есть ли обновления (сообщения)
         updates = bot.get_updates(timeout=5)
         if updates:
             print(f"\n✅ Бот получает сообщения! Последних обновлений: {len(updates)}")
-            for update in updates[-3:]:  # Покажем последние 3
+            for update in updates[-3:]:
                 if update.message:
                     print(f"   - От {update.message.from_user.username}: {update.message.text}")
         else:
